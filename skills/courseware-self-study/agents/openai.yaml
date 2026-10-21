@@ -1,0 +1,4 @@
+interface:
+  display_name: "课件转互动自学网站"
+  short_description: "将PPT与PDF课件变为逐点引导、互动实验、题库和原页可追溯的自学网站"
+  default_prompt: "使用 $courseware-self-study，根据我的PPT或PDF课件制作可离线分享的互动自学网站。"

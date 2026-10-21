@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>互动自学</title>
+<link rel="stylesheet" href="style.css">
+<script src="course-data.js" defer></script>
+<script src="models.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="topbar"><button id="menu" class="mobile-menu" aria-label="打开课程目录" aria-expanded="false">目录</button><a class="brand" href="#" id="brand">自学工作台</a><span id="progress"></span></header>
+<div class="layout"><aside id="sidebar" aria-label="课程目录"></aside><main id="main"></main></div>
+<dialog id="viewer" aria-label="课件原页"><div class="viewer-bar"><strong id="viewer-title"></strong><div><button id="prev-page">上一页</button><button id="next-page">下一页</button><a id="source-file" target="_blank" rel="noopener">打开课件</a><button id="close-viewer">关闭</button></div></div><div id="correction"></div><img id="viewer-image" alt=""></dialog>
+<noscript>请在浏览器中启用 JavaScript 后打开。</noscript>
+</body>
+</html>
