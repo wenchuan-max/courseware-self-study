@@ -110,13 +110,16 @@ class WorkflowTests(unittest.TestCase):
         index.write_text(index.read_text(encoding="utf-8").replace(
             "</head>", '<script src="extra.js?v=1" defer></script></head>'), encoding="utf-8")
         (self.project / "extra.js").write_text("// runtime\n", encoding="utf-8")
+        author = cw.read_json(self.project / "content/course.json")
+        author["share"] = {"files": ["extra.js"]}
+        self.write_data(author)
         target = Path(self.work.name) / "share.zip"
         self.run_cli("validate", "--project", self.project)
         self.run_cli("pack", "--project", self.project, "--zip", target)
         with zipfile.ZipFile(target) as z:
             self.assertIsNone(z.testzip())
-            self.assertIn("site/extra.js", z.namelist())
-            self.assertIn("site/打开网页.cmd", z.namelist())
+            self.assertIn("self-study/extra.js", z.namelist())
+            self.assertIn("self-study/打开网页.cmd", z.namelist())
             self.assertFalse(any("__pycache__" in x for x in z.namelist()))
 
     def test_nonempty_directory_is_not_overwritten(self):

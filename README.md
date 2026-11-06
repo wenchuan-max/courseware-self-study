@@ -106,7 +106,11 @@ flowchart LR
 
 ### 输出
 
-静态 HTML/CSS/JavaScript 网站、知识点数据、原页图片、课件副本、校验记录和离线 ZIP。原课件保持只读；原页错误采用讲解层注释更正。
+本地工程保留原课件、备课备注与校验记录，原件只读。默认分享 ZIP 包含静态网站、公开教学数据、选定原页图和由选页生成的 PDF；不包含原文件、PPT 演讲者备注、未选页、原文件名、输入路径或辅助笔记。原页错误采用讲解层注释更正。
+
+原页放大、搜索、知识点、实验和自测照常工作；“打开课件”打开选定页 PDF。该 PDF 只保留可见选页，不携带原文档作者字段或隐藏内容。图片像素保持一致，去掉文件附加信息。图片上本来可见的姓名或联系方式仍需要交付前检查。
+
+**只分享 pack 产出的 ZIP 或其解压目录，不直接发布整个编辑工程。**
 
 接收学习网站的人，完整解压后双击 **打开网页.cmd（Windows）** 或 **index.html**。网页运行不需要 Python、Node、构建服务器或外部 CDN。Skill 安装包与生成的学习网站 ZIP 是两个不同产物。
 
@@ -141,7 +145,26 @@ python skills/courseware-self-study/scripts/courseware.py serve --project ./my-c
 python skills/courseware-self-study/scripts/courseware.py pack --project ./my-course --zip ./my-course.zip
 ~~~
 
-serve 仅绑定本机 127.0.0.1，并打印实际端口。检查后关闭自己的测试服务。init 拒绝覆盖非空目录；pack 拒绝覆盖已有 ZIP。修改内容或运行文件后重新 build。
+serve 仅绑定本机 127.0.0.1，并打印实际端口。检查后关闭自己的测试服务。init 拒绝覆盖非空目录；pack 拒绝覆盖已有 ZIP。修改内容或运行文件后重新 build。build 和 pack 默认使用 --mode share。只有需要保留完整材料以继续本地编辑时，显式选择归档：
+
+~~~text
+python skills/courseware-self-study/scripts/courseware.py pack --project ./my-course --zip ./my-course-local-archive.zip --mode archive
+~~~
+
+归档包包含原文件、来源路径和备课备注，供本地保存，不作为默认对外分享包。后续 pack --mode share 会重新生成裁剪数据，不沿用之前的完整浏览器数据。
+
+附加脚本、图像、字体或媒体应在作者数据中明确声明：
+
+~~~json
+{
+  "share": {
+    "sourceTitles": {"来源ID": "公开章节名称"},
+    "files": ["assets/diagram.svg", "extra-model.js"]
+  }
+}
+~~~
+
+额外依赖未进入清单时，打包报错，不自动扩大收集范围。更多细节见 [分享边界与兼容性](skills/courseware-self-study/references/sharing.md)。
 
 ### 命令速查
 
@@ -149,10 +172,10 @@ serve 仅绑定本机 127.0.0.1，并打印实际端口。检查后关闭自己�
 |---|---|
 | init | 创建离线模板、作者数据与打开入口 |
 | prepare | 来源清单、PDF 逐页提取/渲染、PPTX 正文/备注、缓存 |
-| build | 将作者数据与来源打包为本地脚本，更新资源版本 |
+| build | 默认生成裁剪后的公开教学数据、选定页 PDF 与资源版本 |
 | validate | 检查 ID、引用、图片、知识点、实验、答案和覆盖 |
 | serve | 启动临时本机预览 |
-| pack | 检查结构、相对依赖，生成并验证离线 ZIP |
+| pack | 默认按明确清单生成分享 ZIP；显式 archive 保留本地编辑资料 |
 
 只有明确登记的自定义模型才会加载；缺失时显示配置缺失。不会根据标题随意套用模型。模板提供一个独立概率面积模型作为接口示例，其他课程的机制需要按内容制作。
 
@@ -162,7 +185,8 @@ serve 仅绑定本机 127.0.0.1，并打印实际端口。检查后关闭自己�
 - [数据结构、字段示例及模型接口](skills/courseware-self-study/references/content-schema.md)
 - [真题来源与内容审查](skills/courseware-self-study/references/review-and-exams.md)
 - [浏览器验收与离线交付](skills/courseware-self-study/references/qa-and-delivery.md)
-- [本次遗传学项目的复盘](skills/courseware-self-study/references/lessons-from-genetics.md)
+- [通用设计经验](skills/courseware-self-study/references/design-lessons.md)
+- [分享边界与兼容性](skills/courseware-self-study/references/sharing.md)
 
 目录：
 
@@ -171,7 +195,7 @@ courseware-self-study/
 ├── README.md
 ├── LICENSE
 ├── requirements.txt
-├── tests/                           轻量回归检查
+├── tests/                           功能与隐私回归检查
 └── skills/courseware-self-study/
     ├── SKILL.md                     Codex 工作指令
     ├── agents/openai.yaml           技能元数据
@@ -184,7 +208,9 @@ courseware-self-study/
 
 结构检查不证明科学内容正确，浏览器截图也不证明原页内容全部覆盖。技能要求把来源覆盖、语义审查、独立复算和真实浏览器验收分开记录。
 
-初始版本使用隔离的概率课件验证过初始化、防覆盖、PDF 页面渲染、PPTX 顺序/备注、缓存、模型绑定、漏页拦截、答案索引、真题出处字段、过期构建和 ZIP 完整性；也在真实浏览器检查过知识点切换、参数计算、错题、进度、原页图与手机布局。浏览器工具若不支持 file://，应如实记录直接文件入口尚未实测，不能把本地服务检查冒充为文件入口检查。
+回归测试使用虚构资料，检查选页范围、PPT 备注、文档作者信息、辅助笔记、隐藏目录、附加资源、缓存、引用、答案和 ZIP；同时验证图像像素、题目、模型参数及本地归档能力。结构测试不能替代真实浏览器对知识点切换、原页翻页、错题和进度的检查。
+
+浏览器工具不支持 file:// 时，应记录文件入口尚未实测，不把本地服务检查冒充为直接文件打开检查。
 
 运行仓库回归检查：
 
@@ -200,9 +226,9 @@ python -m unittest discover -s tests -v
 
 安装的是工作方法、模板和工具。还要告诉 Codex 课件位置、输出目录及课程目标，才会生成你自己的学习网站。
 
-**是否包含遗传学原课件或整套网站？**
+**是否包含用户原课件、完整网站或真实聊天？**
 
-不包含。这里只发布通用技能和项目经验；课程 PDF、原网页、试卷全文及个人学习记录不在仓库中。
+不包含。这里只发布通用技能、模板、工具和虚构示例；真实用户经历、课程资料、试卷全文及个人学习记录不在最新技能中。旧版本历史如需清理，需要另行处理。
 
 **自测题都是真题吗？**
 
@@ -218,7 +244,7 @@ python -m unittest discover -s tests -v
 
 **分享者需要保留什么？**
 
-完整保留生成网站的相对目录，包括脚本、数据、原页图与被引用的来源副本。不要仅发送 index.html。
+使用默认分享 ZIP，完整解压并保留其相对目录；不要只发送 index.html，也不要把带原资料的编辑工程当分享目录。
 
 ## English quick start
 
@@ -231,7 +257,7 @@ Use $skill-installer to install:
 https://github.com/wenchuan-max/courseware-self-study/tree/main/skills/courseware-self-study
 ~~~
 
-Then ask $courseware-self-study to build a demo from your local courseware. PDF rendering requires pypdfium2 and Pillow. PPTX text and notes are supported; export slides to PDF for full-page visuals. Generated websites require no Python or Node at runtime.
+Then ask $courseware-self-study to build a demo from your local courseware. PDF rendering requires pypdfium2 and Pillow. PPTX text and notes are supported; export slides to PDF for full-page visuals. Generated websites require no Python or Node at runtime. Share exports include only selected pages, public teaching fields, declared runtime assets and image-only selected-page PDFs. Originals, presenter notes and authoring records stay in the local project; use explicit archive mode for local backups.
 
 ## 许可证
 

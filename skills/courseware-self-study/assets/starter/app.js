@@ -27,8 +27,11 @@ function showSource(sid,page){
  document.getElementById("viewer-title").textContent=s.title+" · 第 "+page+" 页";
  var img=document.getElementById("viewer-image");img.src=slide.image;img.alt=s.title+" 第 "+page+" 页";
  document.getElementById("source-file").href=s.file;
- document.getElementById("prev-page").disabled=page<=1;
- document.getElementById("next-page").disabled=page>=s.pageCount;
+ var available=(data.slides[sid]||[]).map(function(x){return x.page;}).sort(function(a,b){return a-b;});
+ var pageIndex=available.indexOf(page);
+ document.getElementById("prev-page").disabled=pageIndex<=0;
+ document.getElementById("next-page").disabled=pageIndex>=available.length-1;
+ document.getElementById("source-file").hidden=!s.file;
  document.getElementById("correction").textContent=(data.corrections||[]).filter(function(x){return x.sourceId===sid&&x.page===page;}).map(function(x){return "更正："+x.text;}).join("；");
  var dlg=document.getElementById("viewer");if(!dlg.open)dlg.showModal();
 }
@@ -124,7 +127,7 @@ var originLabels={"coursework":"课件自测","past-exam-original":"真题原文
 function origin(q){
  var s=q.source||{}, el=node("div","origin",originLabels[s.kind]||"未标注来源");
  if(s.institution)el.append(document.createTextNode(" · "+[s.institution,s.year,s.exam,s.item].filter(Boolean).join(" · ")));
- if(s.url){var a=node("a","","查看原卷");a.href=s.url;a.target="_blank";a.rel="noopener";el.append(document.createTextNode(" · "),a);}
+ if(s.url){var a=node("a","","查看原卷");a.href=s.url;a.target="_blank";a.rel="noopener noreferrer";el.append(document.createTextNode(" · "),a);}
  return el;
 }
 function quiz(main,topic){
@@ -193,7 +196,11 @@ document.getElementById("menu").onclick=function(){
  var open=document.body.classList.toggle("nav-open");this.setAttribute("aria-expanded",String(open));
 };
 document.getElementById("close-viewer").onclick=function(){document.getElementById("viewer").close();};
-document.getElementById("prev-page").onclick=function(){showSource(sourceId,sourcePage-1);};
-document.getElementById("next-page").onclick=function(){showSource(sourceId,sourcePage+1);};
+function adjacentPage(direction){
+ var pages=(data.slides[sourceId]||[]).map(function(x){return x.page;}).sort(function(a,b){return a-b;});
+ var target=pages[pages.indexOf(sourcePage)+direction];if(target!==undefined)showSource(sourceId,target);
+}
+document.getElementById("prev-page").onclick=function(){adjacentPage(-1);};
+document.getElementById("next-page").onclick=function(){adjacentPage(1);};
 window.addEventListener("hashchange",function(){render();window.scrollTo(0,0);});render();
 })();

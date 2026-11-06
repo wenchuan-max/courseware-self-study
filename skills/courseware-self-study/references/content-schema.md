@@ -4,7 +4,7 @@
 
 ## 来源与覆盖
 
-prepare 写入 reference/source-manifest.json 和 reference/slides.json。source ID 由相对文件路径生成，内容 SHA 单独记录。使用 PDF 物理页码，第一页为 1；印刷页码可另记。全文索引包括原页文本。
+prepare 写入 reference/source-manifest.json 和 reference/slides.json。source ID 由相对文件路径生成，内容 SHA 单独记录。使用 PDF 物理页码，第一页为 1；印刷页码可另记。本地索引保留原页文本；默认浏览器数据只包含交付范围内被引用的页面。
 
 scope.sourceIds 是本次交付所选的来源；空数组由工具解释为全部已导入来源。demo 可只讲部分页；full 要让所选来源每页都有 topic.refs 或 excludedPages 的具体归属。排除页只适用于封面、目录、重复页等明确理由，不能用来隐藏未讲解的知识。
 
@@ -62,7 +62,7 @@ content/course.json 是作者入口，build 生成 course-data.js。下面仅示
 
 ID 稳定、全局唯一，不用数组下标表示持久身份。知识点可跨页、跨来源；不要为满足校验强行截断真实引用。overview 展示关系，steps 展示推理，takeaway 收束结论，避免原句重复占满屏幕。
 
-corrections 项使用 sourceId、page、text；只改变说明层，原图片和课件不改动。review.status 的 reviewed 只是审查记录，工具不会因此证明内容正确。
+corrections 项使用 sourceId、page、text；只改变说明层，原图片和课件不改动。默认只公开已选页面的更正，不公开未选页说明和 review.notes。review.status 的 reviewed 只是审查记录，工具不会因此证明内容正确。
 
 ## 专门实验
 
@@ -90,3 +90,7 @@ source.kind：
 - unverified：出处尚待核验，不计入已核验真题。
 
 前三种含 past-exam 的类型保留 institution、year、exam、item、url；可加 page、accessed。真题原文须遵守使用范围；优先用有出处的简短改编，并清楚标记。
+
+## 分享配置
+
+默认导出范围、share.sourceTitles、额外资源 share.files 和完整归档模式见 [分享边界与兼容性](sharing.md)。公开字段保持稳定 ID，不导出未定义的附加私有字段；自定义模型的 parameters 仍完整保留，应只含公开教学参数。
